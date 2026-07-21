@@ -6,7 +6,7 @@
 executable for deterministic security primitives.
 
 **Why:** Java is a strong fit for HTTP integrations, configuration, SQLite,
-validation, and application tests. C is a strong fit for reusing Pedro's own
+validation, and application tests. C is a strong fit for reusing my own
 SHA-256 work and demonstrating careful parsing and OpenSSL integration. A
 subprocess protocol avoids deployment-specific JNI headers and library loading.
 
