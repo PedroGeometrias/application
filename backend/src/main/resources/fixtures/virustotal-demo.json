@@ -1,0 +1,53 @@
+{
+  "data": {
+    "type": "domain",
+    "id": "demo.example",
+    "attributes": {
+      "reputation": -12,
+      "country": "US",
+      "asn": 64500,
+      "as_owner": "Example Transit Network",
+      "creation_date": 1751328000,
+      "last_analysis_date": 1784574000,
+      "last_modification_date": 1784574300,
+      "tags": ["phishing", "newly-registered"],
+      "popular_threat_classification": {
+        "suggested_threat_label": "credential-phishing"
+      },
+      "last_analysis_stats": {
+        "malicious": 6,
+        "suspicious": 2,
+        "harmless": 51,
+        "undetected": 31,
+        "timeout": 0
+      },
+      "last_analysis_results": {
+        "AlphaSecure": {
+          "engine_name": "AlphaSecure",
+          "category": "malicious",
+          "result": "phishing"
+        },
+        "BlocklistLab": {
+          "engine_name": "BlocklistLab",
+          "category": "malicious",
+          "result": "malicious-site"
+        },
+        "CloudShield": {
+          "engine_name": "CloudShield",
+          "category": "suspicious",
+          "result": "suspicious"
+        },
+        "DefenderNet": {
+          "engine_name": "DefenderNet",
+          "category": "malicious",
+          "result": "credential-theft"
+        },
+        "EagleEye": {
+          "engine_name": "EagleEye",
+          "category": "harmless",
+          "result": "clean"
+        }
+      }
+    }
+  }
+}

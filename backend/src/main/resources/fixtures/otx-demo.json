@@ -1,0 +1,49 @@
+{
+  "indicator": "demo.example",
+  "type": "domain",
+  "reputation": -4,
+  "country_name": "United States",
+  "asn": "AS64500",
+  "organization": "Example Transit Network",
+  "pulse_info": {
+    "count": 4,
+    "pulses": [
+      {
+        "id": "demo-pulse-001",
+        "name": "Credential phishing infrastructure — July campaign",
+        "description": "Domains observed serving cloned authentication pages and collecting credentials.",
+        "adversary": "Unattributed phishing cluster",
+        "created": "2026-07-08T13:15:00Z",
+        "modified": "2026-07-19T09:42:00Z",
+        "tags": ["phishing", "credential-theft", "active-campaign"]
+      },
+      {
+        "id": "demo-pulse-002",
+        "name": "Suspicious redirect network",
+        "description": "Short-lived domains redirecting victims to malicious landing pages.",
+        "adversary": "",
+        "created": "2026-06-28T18:03:00Z",
+        "modified": "2026-07-15T14:22:00Z",
+        "tags": ["redirect", "phishing"]
+      },
+      {
+        "id": "demo-pulse-003",
+        "name": "Commodity infostealer delivery chain",
+        "description": "Infrastructure linked to an information-stealing malware delivery chain.",
+        "adversary": "Commodity crimeware operators",
+        "created": "2026-07-02T10:10:00Z",
+        "modified": "2026-07-17T12:30:00Z",
+        "tags": ["infostealer", "malware-delivery"]
+      },
+      {
+        "id": "demo-pulse-004",
+        "name": "Community watchlist match",
+        "description": "Community-maintained list of newly observed suspicious infrastructure.",
+        "adversary": "",
+        "created": "2026-07-12T16:00:00Z",
+        "modified": "2026-07-20T21:05:00Z",
+        "tags": ["watchlist", "community"]
+      }
+    ]
+  }
+}

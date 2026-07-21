@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: threatlens
+  datasource:
+    url: jdbc:sqlite:${THREATLENS_DB_PATH:./threatlens.db}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 4
+      connection-init-sql: PRAGMA busy_timeout=5000
+  sql:
+    init:
+      mode: always
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  error:
+    include-message: always
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+threatlens:
+  demo-mode: ${THREATLENS_DEMO_MODE:true}
+  cache-ttl: ${THREATLENS_CACHE_TTL:PT10M}
+  native-core:
+    path: ${THREATCORE_PATH:../native/build/threatcore}
+    required: ${THREATCORE_REQUIRED:false}
+    timeout: ${THREATCORE_TIMEOUT:PT15S}
+  providers:
+    timeout: ${PROVIDER_TIMEOUT:PT8S}
+    otx:
+      base-url: ${OTX_BASE_URL:https://otx.alienvault.com}
+      api-key: ${OTX_API_KEY:}
+    virus-total:
+      base-url: ${VT_BASE_URL:https://www.virustotal.com}
+      api-key: ${VT_API_KEY:}
+  ai:
+    enabled: ${AI_BRIEFING_ENABLED:false}
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+    api-key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-5.6}
+    timeout: ${OPENAI_TIMEOUT:PT20S}
+  signing:
+    enabled: ${REPORT_SIGNING_ENABLED:true}
+    private-key-path: ${REPORT_PRIVATE_KEY_PATH:./data/signing/private.pem}
+    public-key-path: ${REPORT_PUBLIC_KEY_PATH:./data/signing/public.pem}

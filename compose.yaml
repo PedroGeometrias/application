@@ -1,0 +1,18 @@
+services:
+  threatlens:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      THREATLENS_DEMO_MODE: ${THREATLENS_DEMO_MODE:-true}
+      OTX_API_KEY: ${OTX_API_KEY:-}
+      VT_API_KEY: ${VT_API_KEY:-}
+      AI_BRIEFING_ENABLED: ${AI_BRIEFING_ENABLED:-false}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.6}
+    volumes:
+      - threatlens-data:/data
+    restart: unless-stopped
+
+volumes:
+  threatlens-data:

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#071014">
+    <meta name="description" content="ThreatLens unifies OTX and VirusTotal evidence into an explainable IOC investigation.">
+    <title>ThreatLens · Unified IOC Intelligence</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#workspace">Skip to investigation</a>
+
+<header class="topbar">
+    <a class="brand" href="/" aria-label="ThreatLens home">
+        <span class="brand-mark" aria-hidden="true"><span></span></span>
+        <span>
+            <strong>ThreatLens</strong>
+            <small>Unified IOC intelligence</small>
+        </span>
+    </a>
+    <div class="system-status" id="system-status" aria-label="System capabilities">
+        <span class="status-pill pending">Checking services…</span>
+    </div>
+</header>
+
+<main id="workspace">
+    <section class="query-shell" aria-labelledby="query-title">
+        <div class="query-intro">
+            <p class="eyebrow">INVESTIGATION CONSOLE</p>
+            <h1 id="query-title">Turn scattered threat signals into one defensible answer.</h1>
+            <p>Inspect an IP, domain, or file hash across OTX and VirusTotal. Every result keeps its evidence, change history, and integrity proof.</p>
+        </div>
+
+        <div class="demo-banner" id="demo-banner" hidden>
+            <span class="pulse-dot" aria-hidden="true"></span>
+            <span><strong>Demo evidence is active.</strong> Try <button class="text-action" data-example="portal-update.example">portal-update.example</button> to explore without API keys.</span>
+        </div>
+
+        <div class="query-panel">
+            <div class="query-tabs" role="tablist" aria-label="Investigation input">
+                <button class="query-tab active" id="indicator-tab" role="tab" aria-selected="true" aria-controls="indicator-panel">Indicator</button>
+                <button class="query-tab" id="file-tab" role="tab" aria-selected="false" aria-controls="file-panel">Local file hash</button>
+            </div>
+
+            <div id="indicator-panel" role="tabpanel" aria-labelledby="indicator-tab">
+                <form id="search-form" class="search-form">
+                    <label class="sr-only" for="indicator-input">IP address, domain, MD5, SHA-1, or SHA-256</label>
+                    <div class="input-wrap">
+                        <span class="input-icon" aria-hidden="true">⌕</span>
+                        <input id="indicator-input" name="indicator" autocomplete="off" spellcheck="false"
+                               placeholder="IP, domain, MD5, SHA-1 or SHA-256" required>
+                    </div>
+                    <button class="primary-button" type="submit">
+                        <span>Investigate</span><span aria-hidden="true">→</span>
+                    </button>
+                </form>
+                <p class="input-hint">Type is detected and canonicalized by the native C core before any provider call.</p>
+            </div>
+
+            <div id="file-panel" role="tabpanel" aria-labelledby="file-tab" hidden>
+                <form id="file-form" class="file-form">
+                    <label class="drop-zone" id="drop-zone" for="file-input">
+                        <span class="file-symbol" aria-hidden="true">#</span>
+                        <span><strong>Choose a suspicious file</strong><small>or drop it here · up to 100 MB</small></span>
+                        <input id="file-input" type="file" required>
+                    </label>
+                    <button class="primary-button" type="submit">Hash & investigate <span aria-hidden="true">→</span></button>
+                </form>
+                <p class="privacy-note"><span aria-hidden="true">◎</span> The C core streams the file locally. Only its SHA-256 digest is sent to intelligence providers.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="activity-message" id="activity-message" role="status" aria-live="polite" hidden></div>
+
+    <section class="result-shell" id="result-shell" hidden aria-labelledby="result-title">
+        <div class="result-heading">
+            <div>
+                <div class="heading-line">
+                    <span class="type-badge" id="result-type">DOMAIN</span>
+                    <span class="timestamp" id="result-time"></span>
+                </div>
+                <h2 id="result-title"></h2>
+                <p class="result-subtitle" id="result-subtitle"></p>
+            </div>
+            <div class="result-actions">
+                <button class="secondary-button" id="refresh-result" type="button">↻ Recheck</button>
+                <button class="secondary-button" id="export-report" type="button">↓ Signed report</button>
+            </div>
+        </div>
+
+        <div class="overview-grid">
+            <article class="risk-card panel">
+                <div class="risk-dial" id="risk-dial" style="--score:0">
+                    <div><strong id="risk-score">0</strong><span>/100</span></div>
+                </div>
+                <div class="risk-copy">
+                    <p class="section-label">OVERALL VERDICT</p>
+                    <h3 id="risk-verdict">Inconclusive</h3>
+                    <div class="reason-list" id="reason-list"></div>
+                </div>
+            </article>
+
+            <article class="briefing-card panel">
+                <div class="panel-title-row">
+                    <div>
+                        <p class="section-label">CLIENT BRIEFING</p>
+                        <h3>What this means</h3>
+                    </div>
+                    <span class="source-badge" id="briefing-source">Deterministic</span>
+                </div>
+                <p id="briefing-text"></p>
+                <p class="caveat">Threat-intelligence evidence supports a decision; it does not replace internal context or analyst review.</p>
+            </article>
+        </div>
+
+        <div class="metric-grid" id="metric-grid"></div>
+
+        <article class="change-card panel" id="change-card">
+            <span class="change-icon" aria-hidden="true">↗</span>
+            <div>
+                <p class="section-label">CHANGE SINCE LAST LOOKUP</p>
+                <h3 id="change-summary">First observation</h3>
+                <ul id="change-list"></ul>
+            </div>
+        </article>
+
+        <section class="section-block" aria-labelledby="providers-title">
+            <div class="section-heading">
+                <div>
+                    <p class="section-label">SOURCE CORRELATION</p>
+                    <h2 id="providers-title">Provider evidence</h2>
+                </div>
+                <p>Independent provider failures do not erase evidence returned by the other source.</p>
+            </div>
+            <div class="provider-grid" id="provider-grid"></div>
+        </section>
+
+        <section class="section-block" aria-labelledby="evidence-title">
+            <div class="section-heading compact">
+                <div>
+                    <p class="section-label">EXPLAINABILITY</p>
+                    <h2 id="evidence-title">Evidence behind the verdict</h2>
+                </div>
+                <span class="evidence-count" id="evidence-count">0 items</span>
+            </div>
+            <div class="table-wrap panel">
+                <table>
+                    <thead>
+                    <tr><th>Severity</th><th>Source</th><th>Signal</th><th>Detail</th></tr>
+                    </thead>
+                    <tbody id="evidence-body"></tbody>
+                </table>
+                <div class="empty-table" id="empty-evidence" hidden>No provider returned a positive evidence item.</div>
+            </div>
+        </section>
+
+        <details class="raw-panel panel">
+            <summary><span>Raw provider responses</span><small>For analyst verification and troubleshooting</small></summary>
+            <pre id="raw-json"></pre>
+        </details>
+
+        <div class="integrity-line">
+            <span aria-hidden="true">◇</span>
+            <span>History integrity hash</span>
+            <code id="integrity-hash"></code>
+            <span class="native-note" id="native-note"></span>
+        </div>
+    </section>
+
+    <section class="history-shell" aria-labelledby="history-title">
+        <div class="section-heading history-heading">
+            <div>
+                <p class="section-label">LOCAL AUDIT TRAIL</p>
+                <h2 id="history-title">Investigation history</h2>
+            </div>
+            <div class="history-actions">
+                <button class="secondary-button" id="verify-export" type="button">Verify exported report</button>
+                <button class="secondary-button" id="verify-history" type="button">Check chain integrity</button>
+            </div>
+        </div>
+
+        <form class="history-filters panel" id="history-filters">
+            <label>Search<input name="query" placeholder="Indicator contains…"></label>
+            <label>Type
+                <select name="type"><option value="">All types</option><option>IPV4</option><option>IPV6</option><option>DOMAIN</option><option>MD5</option><option>SHA1</option><option>SHA256</option></select>
+            </label>
+            <label>Verdict
+                <select name="verdict"><option value="">All verdicts</option><option>HIGH_RISK</option><option>SUSPICIOUS</option><option>NO_KNOWN_THREAT</option><option>INCONCLUSIVE</option></select>
+            </label>
+            <label>Provider
+                <select name="provider"><option value="">Any provider</option><option value="OTX">OTX</option><option value="VirusTotal">VirusTotal</option></select>
+            </label>
+            <button class="secondary-button" type="submit">Apply filters</button>
+        </form>
+
+        <div class="history-list" id="history-list"></div>
+        <p class="history-empty" id="history-empty" hidden>No investigations match these filters.</p>
+    </section>
+</main>
+
+<dialog id="verify-dialog">
+    <form method="dialog" class="dialog-card">
+        <div class="dialog-header">
+            <div><p class="section-label">RSA-PSS VERIFICATION</p><h2>Verify an exported report</h2></div>
+            <button class="icon-button" value="cancel" aria-label="Close">×</button>
+        </div>
+        <p>Select a JSON report exported by this ThreatLens instance. Verification uses the public key only.</p>
+        <label class="dialog-file">Exported JSON<input type="file" id="verify-file" accept="application/json,.json"></label>
+        <div class="verify-result" id="verify-result" hidden></div>
+        <button class="primary-button" id="run-verification" type="button">Verify signature</button>
+    </form>
+</dialog>
+
+<footer>
+    <span>ThreatLens</span>
+    <span>Built by Pedro Haro · Java + C · Local-first evidence handling</span>
+</footer>
+
+<script src="/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+.env
+.idea/
+.vscode/
+*.iml
+*.log
+backend/target/
+backend/data/
+native/build/
+data/
+*.db
+*.db-shm
+*.db-wal
+*.pem
+!docs/example-public-key.pem
+.DS_Store
