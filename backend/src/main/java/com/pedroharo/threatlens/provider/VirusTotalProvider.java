@@ -2,6 +2,7 @@ package com.pedroharo.threatlens.provider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pedroharo.threatlens.config.ThreatLensProperties;
 import com.pedroharo.threatlens.domain.EvidenceItem;
 import com.pedroharo.threatlens.domain.EvidenceSeverity;
@@ -46,7 +47,9 @@ public class VirusTotalProvider implements ThreatProvider {
     @Override
     public ProviderReport investigate(Indicator indicator) {
         if (properties.demoMode()) {
-            return normalize(loadFixture("fixtures/virustotal-demo.json"), indicator);
+            JsonNode fixture = loadFixture("fixtures/virustotal-demo.json");
+            matchFixtureToIndicator(fixture, indicator);
+            return normalize(fixture, indicator);
         }
         String apiKey = properties.providers().virusTotal().apiKey();
         if (apiKey.isBlank()) {
@@ -129,6 +132,17 @@ public class VirusTotalProvider implements ThreatProvider {
                 malicious, suspicious, harmless, undetected, 0, reputation,
                 country, asn, owner, firstSeen, lastSeen,
                 List.copyOf(tags), List.copyOf(evidence), root);
+    }
+
+    private static void matchFixtureToIndicator(JsonNode fixture, Indicator indicator) {
+        JsonNode data = fixture.path("data");
+        if (!(data instanceof ObjectNode object)) return;
+        object.put("id", indicator.normalized());
+        object.put("type", switch (indicator.type()) {
+            case IPV4, IPV6 -> "ip_address";
+            case DOMAIN -> "domain";
+            case MD5, SHA1, SHA256 -> "file";
+        });
     }
 
     private JsonNode loadFixture(String path) {

@@ -1,6 +1,7 @@
 package com.pedroharo.threatlens.provider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pedroharo.threatlens.config.ThreatLensProperties;
 import com.pedroharo.threatlens.domain.Indicator;
 import com.pedroharo.threatlens.domain.IndicatorType;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,23 @@ class OtxProviderTest {
             assertThat(report.reputation()).isEqualTo(-4);
             assertThat(report.tags()).contains("phishing", "credential-theft");
             assertThat(report.evidence()).hasSize(4);
+            assertThat(report.evidence()).allSatisfy(item ->
+                    assertThat(item.reference()).startsWith("https://otx.alienvault.com/pulse/"));
             assertThat(report.succeeded()).isTrue();
         }
+    }
+
+    @Test
+    void demoEvidenceDoesNotLinkToNonexistentSyntheticPulses() {
+        var demoProvider = new OtxProvider(null, mapper,
+                new ThreatLensProperties(true, null, null, null, null, null));
+        var indicator = new Indicator("portal-update.example", "portal-update.example",
+                IndicatorType.DOMAIN);
+
+        var report = demoProvider.investigate(indicator);
+
+        assertThat(report.evidence()).allSatisfy(item -> assertThat(item.reference()).isNull());
+        assertThat(report.raw().path("indicator").asText()).isEqualTo("portal-update.example");
+        assertThat(report.raw().path("type").asText()).isEqualTo("domain");
     }
 }

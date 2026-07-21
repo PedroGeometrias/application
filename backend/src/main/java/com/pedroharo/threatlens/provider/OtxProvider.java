@@ -2,6 +2,7 @@ package com.pedroharo.threatlens.provider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pedroharo.threatlens.config.ThreatLensProperties;
 import com.pedroharo.threatlens.domain.EvidenceItem;
 import com.pedroharo.threatlens.domain.EvidenceSeverity;
@@ -48,7 +49,9 @@ public class OtxProvider implements ThreatProvider {
     @Override
     public ProviderReport investigate(Indicator indicator) {
         if (properties.demoMode()) {
-            return normalize(loadFixture("fixtures/otx-demo.json"), indicator);
+            JsonNode fixture = loadFixture("fixtures/otx-demo.json");
+            matchFixtureToIndicator(fixture, indicator);
+            return normalize(fixture, indicator, false);
         }
 
         String type = switch (indicator.type()) {
@@ -66,7 +69,7 @@ public class OtxProvider implements ThreatProvider {
 
         try {
             ExternalApiClient.ApiResponse response = client.get(url, headers);
-            if (response.status() == 200) return normalize(response.body(), indicator);
+            if (response.status() == 200) return normalize(response.body(), indicator, true);
             if (response.status() == 404) {
                 return ProviderReports.failure(name(), ProviderStatus.NOT_FOUND,
                         "OTX has no record for this indicator.");
@@ -84,6 +87,10 @@ public class OtxProvider implements ThreatProvider {
     }
 
     ProviderReport normalize(JsonNode root, Indicator indicator) {
+        return normalize(root, indicator, true);
+    }
+
+    ProviderReport normalize(JsonNode root, Indicator indicator, boolean includeExternalReferences) {
         JsonNode pulseInfo = root.path("pulse_info");
         JsonNode pulses = pulseInfo.path("pulses");
         int pulseCount = pulseInfo.path("count").asInt(pulses.isArray() ? pulses.size() : 0);
@@ -104,7 +111,7 @@ public class OtxProvider implements ThreatProvider {
                             ? pulse.path("description").asText("Community threat-intelligence match.")
                             : "Associated adversary: " + adversary;
                     String pulseId = pulse.path("id").asText("");
-                    String reference = pulseId.isBlank() ? null
+                    String reference = !includeExternalReferences || pulseId.isBlank() ? null
                             : "https://otx.alienvault.com/pulse/" + pulseId;
                     evidence.add(new EvidenceItem(name(), EvidenceSeverity.HIGH,
                             "Threat pulse", title, abbreviate(detail, 260), reference));
@@ -127,6 +134,17 @@ public class OtxProvider implements ThreatProvider {
                 0, 0, 0, 0, pulseCount, reputation,
                 country, asn, owner, firstSeen, lastSeen,
                 List.copyOf(tags), List.copyOf(evidence), root);
+    }
+
+    private static void matchFixtureToIndicator(JsonNode fixture, Indicator indicator) {
+        if (!(fixture instanceof ObjectNode root)) return;
+        root.put("indicator", indicator.normalized());
+        root.put("type", switch (indicator.type()) {
+            case IPV4 -> "IPv4";
+            case IPV6 -> "IPv6";
+            case DOMAIN -> "domain";
+            case MD5, SHA1, SHA256 -> "file";
+        });
     }
 
     private JsonNode loadFixture(String path) {

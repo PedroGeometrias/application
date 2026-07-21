@@ -1,6 +1,7 @@
 package com.pedroharo.threatlens.provider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pedroharo.threatlens.config.ThreatLensProperties;
 import com.pedroharo.threatlens.domain.Indicator;
 import com.pedroharo.threatlens.domain.IndicatorType;
 import org.junit.jupiter.api.Test;
@@ -28,5 +29,19 @@ class VirusTotalProviderTest {
                     .contains("AlphaSecure", "CloudShield")
                     .doesNotContain("EagleEye");
         }
+    }
+
+    @Test
+    void demoRawResponseMatchesTheRequestedIndicator() {
+        var demoProvider = new VirusTotalProvider(null, mapper,
+                new ThreatLensProperties(true, null, null, null, null, null));
+        var indicator = new Indicator("portal-update.example", "portal-update.example",
+                IndicatorType.DOMAIN);
+
+        var report = demoProvider.investigate(indicator);
+
+        assertThat(report.raw().path("data").path("id").asText())
+                .isEqualTo("portal-update.example");
+        assertThat(report.raw().path("data").path("type").asText()).isEqualTo("domain");
     }
 }

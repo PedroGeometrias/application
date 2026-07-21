@@ -34,7 +34,7 @@
 
         <div class="demo-banner" id="demo-banner" hidden>
             <span class="pulse-dot" aria-hidden="true"></span>
-            <span><strong>Demo evidence is active.</strong> Try <button class="text-action" data-example="portal-update.example">portal-update.example</button> to explore without API keys.</span>
+            <span><strong>Synthetic demo evidence is active.</strong> Try <button class="text-action" data-example="portal-update.example">portal-update.example</button> to explore without API keys. External evidence links are disabled because the demo records are not real OTX pulses.</span>
         </div>
 
         <div class="query-panel">
@@ -67,7 +67,7 @@
                     </label>
                     <button class="primary-button" type="submit">Hash & investigate <span aria-hidden="true">→</span></button>
                 </form>
-                <p class="privacy-note"><span aria-hidden="true">◎</span> The C core streams the file locally. Only its SHA-256 digest is sent to intelligence providers.</p>
+                <p class="privacy-note"><span aria-hidden="true">◎</span> The backend streams the file into the C core. Only its SHA-256 digest is sent to intelligence providers. When ThreatLens runs on localhost, the file remains on this computer.</p>
             </div>
         </div>
     </section>

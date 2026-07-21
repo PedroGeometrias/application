@@ -61,12 +61,12 @@ function bindSearch() {
         if (!file) return showActivity('Choose a file first.', 'error');
         const data = new FormData();
         data.append('file', file);
-        setBusy(true, `Hashing ${file.name} locally, then checking its SHA-256 digest…`);
+        setBusy(true, `Hashing ${file.name} with the C backend, then checking its SHA-256 digest…`);
         try {
             const report = await api('/api/investigations/file', { method: 'POST', body: data });
             renderReport(report);
             await loadHistory();
-            showActivity(`The file contents stayed local. Investigated SHA-256 ${report.indicator.normalized}.`, 'success');
+            showActivity(`The backend hashed the file with C. Only SHA-256 ${report.indicator.normalized} was sent to intelligence providers.`, 'success');
         } catch (error) {
             showActivity(error.message, 'error');
         } finally {
@@ -207,12 +207,15 @@ function renderEvidence(providers) {
     const evidence = providers.flatMap(provider => provider.evidence || []);
     $('#evidence-count').textContent = `${evidence.length} item${evidence.length === 1 ? '' : 's'}`;
     $('#empty-evidence').hidden = evidence.length !== 0;
-    $('#evidence-body').innerHTML = evidence.map(item => `<tr>
+    $('#evidence-body').innerHTML = evidence.map(item => {
+        const reference = state.status?.demoMode ? null : safeUrl(item.reference);
+        return `<tr>
         <td><span class="severity ${item.severity.toLowerCase()}">${escapeHtml(item.severity)}</span></td>
         <td>${escapeHtml(item.source)}</td>
-        <td>${item.reference ? `<a class="evidence-link" href="${safeUrl(item.reference)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)} ↗</a>` : escapeHtml(item.title)}</td>
+        <td>${reference ? `<a class="evidence-link" href="${escapeHtml(reference)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)} ↗</a>` : escapeHtml(item.title)}</td>
         <td>${escapeHtml(item.detail)}</td>
-    </tr>`).join('');
+    </tr>`;
+    }).join('');
 }
 
 function bindHistory() {
@@ -309,7 +312,7 @@ function showActivity(message, type) {
 function updateFileLabel(file) {
     if (!file) return;
     $('#drop-zone strong').textContent = file.name;
-    $('#drop-zone small').textContent = `${formatBytes(file.size)} · ready for local SHA-256`;
+    $('#drop-zone small').textContent = `${formatBytes(file.size)} · ready for SHA-256`;
 }
 
 async function api(url, options = {}) {
@@ -347,10 +350,11 @@ function formatBytes(bytes) {
 }
 
 function safeUrl(value) {
+    if (!value) return null;
     try {
         const url = new URL(value);
-        return ['http:', 'https:'].includes(url.protocol) ? escapeHtml(url.href) : '#';
-    } catch { return '#'; }
+        return ['http:', 'https:'].includes(url.protocol) ? url.href : null;
+    } catch { return null; }
 }
 
 function escapeHtml(value) {
