@@ -16,7 +16,7 @@ The only requirement for the easiest path is Docker with Compose:
 
 ```bash
 git clone <repository-url>
-cd threatlens
+cd application
 docker compose up --build
 ```
 
